@@ -1,0 +1,16 @@
+
+
+/* App.css */
+
+.App {
+  position: relative;
+  min-height: 100vh; /* Ensure the app takes at least the full height of the viewport */
+  margin: 0;
+  padding: 0;
+}
+
+Ensure that the footer does not overlap with content
+.content {
+  padding-bottom: 80px; /* Adjust this value to match the height of your footer */
+}
+

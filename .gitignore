@@ -1,0 +1,27 @@
+.idea
+# Node modules
+frontend/node_modules
+
+# Build files
+frontend/build
+frontend/.npm
+frontend/.yarn
+
+# Python virtual environment
+backend/venv
+
+# Local development settings
+backend/backend/settings/local.py
+
+# Compiled Python files
+*.pyc
+*.exe
+
+# Editor-specific files
+.vscode/
+.idea/
+
+# Docker files
+frontend/Dockerfile
+backend/Dockerfile
+backend/docker-compose.yml

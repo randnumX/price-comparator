@@ -1,0 +1,28 @@
+/* Header styles */
+.ui.fixed.menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #000000; /* Background color of the header */
+    padding: 1rem; /* Padding around header content */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Box shadow for a subtle elevation */
+    z-index: 1000; /* Adjust z-index to ensure it's above other content */
+   ;
+}
+
+/* Centering header content */
+.ui.fixed.menu .ui.container {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+}
+a>h1{
+    color: rgb(255, 255, 255) !important
+}
+/* Responsive design adjustments */
+@media screen and (max-width: 768px) {
+    .ui.fixed.menu .ui.container {
+        padding: 0; /* Adjust padding for smaller screens */
+    }
+}

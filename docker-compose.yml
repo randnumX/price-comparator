@@ -1,0 +1,27 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      mynetwork:
+        aliases:
+          - frontend.mywebsite.com
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    networks:
+      mynetwork:
+        aliases:
+          - backend.mywebsite.com
+
+networks:
+  mynetwork:
+    driver: bridge
