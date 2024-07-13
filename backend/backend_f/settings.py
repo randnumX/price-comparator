@@ -1,20 +1,18 @@
-# settings.py
 import os
 
-ROOT_URLCONF = 'backend.urls'
+ROOT_URLCONF = 'backend_f.urls'
 
 
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
-SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = True
+SECRET_KEY = os.getenv('SECRET_KEY',"TEST_SECREST_KEY")
 
-# Add your domain name or IP address here in a list
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    # Add paths to additional static file directories here
+   
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3000','http://localhost:3000'
 ]
 TEMPLATES = [
     {
@@ -41,7 +39,25 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 'corsheaders.middleware.CorsMiddleware','whitenoise.middleware.WhiteNoiseMiddleware'
-    # Add more middleware as needed
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'Accept',
+    'Accept-Encoding',
+    'Authorization',
+    'Content-Type',
+    'Origin',
+    'X-CSRF-Token',
+    'X-Requested-With',
 ]
 INSTALLED_APPS = [
 
@@ -54,5 +70,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'products'
 ]
+
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

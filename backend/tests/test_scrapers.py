@@ -1,13 +1,11 @@
-# backend/products/tests/test_scrapers.py
-
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 import pytest
 from datetime import datetime, timedelta
-from ..scraper.shopping_scrapper import ShoppingScraper
-from ..scraper.airfare_scraper import AirfareScraper
+from backend.products.scraper.shopping_scrapper import ShoppingScraper
+from backend.products.scraper.airfare_scraper import AirfareScraper
 
 @pytest.fixture
 def shopping_scraper():

@@ -2,63 +2,160 @@ import time
 import logging
 from datetime import datetime, timedelta
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from .base_scraper import BaseScraper
+from backend.products.scraper.base_scraper import BaseScraper
 from selenium.webdriver.common.by import By
-from config import SCRAPER_DELAY, WEEKLY_SCRAPER_DELAY
+from backend.backend_f.config import SCRAPER_DELAY, WEEKLY_SCRAPER_DELAY
 
 class AirfareScraper(BaseScraper):
     def __init__(self):
         super().__init__()
         self.logger = logging.getLogger(__name__)
 
-    def scrape_google_flights(self, from_location, to_location, date):
+    def scrape_makemytrip(self, from_location, to_location, date):
         """
-        Scrape flight information from Google Flights.
+        Scrape flight information from MakeMyTrip.
 
         Args:
-            from_location (str): Departure airport code.
-            to_location (str): Arrival airport code.
+            from_location (str): Departure airport or city.
+            to_location (str): Arrival airport or city.
             date (str): Flight date in YYYY-MM-DD format.
 
         Returns:
             list: A list of dictionaries containing flight information.
         """
-        base_url = "https://www.google.com/flights"
-        url = f"{base_url}?f=0&hl=en#flt={from_location}.{to_location}.{date}*"
-        self.get_page(url)
-
-        results = []
         try:
-            # Wait for the results to load
-            wait = WebDriverWait(self.driver, 10)
-            wait.until(EC.presence_of_element_located(
-                (By.XPATH, "//div[contains(@class, 'gws-flights-results__result-item')]")))
+            date_makemytrip = datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
 
-            items = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'gws-flights-results__result-item')]")
-            for item in items:
+            url = f"https://www.makemytrip.com/flight/search?itinerary={from_location}-{to_location}-{date_makemytrip}&tripType=O&paxType=A-1_C-0_I-0&intl=false&cabinClass=E&ccde=IN&lang=eng"
+            self.get_page(url)
+
+            self.driver.implicitly_wait(10)
+
+            results = []
+
+            flight_items = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'listingCard')]")
+            for item in flight_items:
                 try:
-                    flight_info = item.find_element(By.XPATH,
-                                                    ".//div[contains(@class, 'gws-flights-results__leg')]").text
-                    price = item.find_element(By.XPATH, ".//div[contains(@class, 'gws-flights-results__price')]").text
+                    airline = item.find_element(By.XPATH, ".//p[contains(@class, 'airlineName')]").text
+                    price = item.find_element(By.XPATH, ".//p[contains(@class, 'blackText fontSize18')]").text
+                    departure_time = item.find_element(By.XPATH,
+                                                       ".//p[contains(@class, 'appendBottom2 flightTimeInfo')]").text
                     results.append({
-                        "flight_info": flight_info,
-                        "price": price
+                        "airline": airline,
+                        "price": price,
+                        "departure_time": departure_time
                     })
-                except NoSuchElementException as e:
-                    self.logger.warning(f"Element not found: {e}")
-                except Exception as e:
-                    self.logger.error(f"Unexpected error: {e}")
+                except NoSuchElementException:
+                    continue
 
-                time.sleep(0.5)  # Rate limiting
+            return results
 
         except TimeoutException:
-            self.logger.error("Timeout waiting for flight results to load")
+            self.logger.error("Timeout waiting for elements to load on MakeMyTrip")
+        except NoSuchElementException as e:
+            self.logger.error(f"Element not found: {e}")
         except Exception as e:
             self.logger.error(f"Unexpected error during scraping: {e}")
 
-        return results
+        return []
+
+    def scrape_ixigo(self, from_location, to_location, date):
+        """
+        Scrape flight information from ixigo.
+
+        Args:
+            from_location (str): Departure airport or city.
+            to_location (str): Arrival airport or city.
+            date (str): Flight date in YYYYMMDD format.
+
+        Returns:
+            list: A list of dictionaries containing flight information.
+        """
+        try:
+            date_ixigo = datetime.strptime(date, '%Y-%m-%d').strftime('%d%m%Y')
+
+            url = f"https://www.ixigo.com/search/result/flight?from={from_location}&to={to_location}&date={date_ixigo}&adults=1&children=0&infants=0&class=e&source=Search%20Form&hbs=true"
+            self.get_page(url)
+
+            self.driver.implicitly_wait(10)
+
+            results = []
+
+            flight_items = self.driver.find_elements(By.XPATH,
+                                                     "//div[contains(@class, 'flightCard') or contains(@class, 'flight-listing')]")
+            for item in flight_items:
+                try:
+                    airline = item.find_element(By.XPATH, ".//div[contains(@class, 'airlineName')]").text
+                    price = item.find_element(By.XPATH, ".//span[contains(@class, 'price')]").text
+                    departure_time = item.find_element(By.XPATH, ".//div[contains(@class, 'departure-time')]").text
+                    results.append({
+                        "airline": airline,
+                        "price": price,
+                        "departure_time": departure_time
+                    })
+                except NoSuchElementException:
+                    continue
+
+            return results
+
+        except TimeoutException:
+            self.logger.error("Timeout waiting for elements to load on ixigo")
+        except NoSuchElementException as e:
+            self.logger.error(f"Element not found: {e}")
+        except Exception as e:
+            self.logger.error(f"Unexpected error during scraping: {e}")
+
+        return []
+
+    def scrape_cleartrip(self, from_location, to_location, date):
+        """
+        Scrape flight information from Cleartrip.
+
+        Args:
+            from_location (str): Departure airport or city.
+            to_location (str): Arrival airport or city.
+            date (str): Flight date in YYYY-MM-DD format.
+
+        Returns:
+            list: A list of dictionaries containing flight information.
+        """
+        try:
+            date_cleartrip = datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
+
+            url = f"https://www.cleartrip.com/flights/results?adults=1&childs=0&infants=0&class=Economy&depart_date={date_cleartrip}&from={from_location}&to={to_location}&intl=n&origin={from_location}&destination={to_location}"
+            self.get_page(url)
+
+            self.driver.implicitly_wait(10)
+
+            results = []
+
+            flight_items = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'listingCard')]")
+            for item in flight_items:
+                try:
+                    airline = item.find_element(By.XPATH, ".//p[contains(@class, 'airlineName')]").text
+                    price = item.find_element(By.XPATH, ".//p[contains(@class, 'blackText fontSize18')]").text
+                    departure_time = item.find_element(By.XPATH, ".//p[contains(@class, 'appendBottom2 flightTimeInfo')]").text
+                    results.append({
+                        "airline": airline,
+                        "price": price,
+                        "departure_time": departure_time
+                    })
+                except NoSuchElementException:
+                    continue
+
+            return results
+
+        except TimeoutException:
+            self.logger.error("Timeout waiting for elements to load on Cleartrip")
+        except NoSuchElementException as e:
+            self.logger.error(f"Element not found: {e}")
+        except Exception as e:
+            self.logger.error(f"Unexpected error during scraping: {e}")
+
+        return []
 
     def scrape_skyscanner(self, from_location, to_location, date):
         """
@@ -107,53 +204,8 @@ class AirfareScraper(BaseScraper):
 
         return results
 
-    def scrape_makemytrip(self, from_location, to_location, date):
-        """
-        Scrape flight information from MakeMyTrip (Indian site).
-
-        Args:
-            from_location (str): Departure airport code.
-            to_location (str): Arrival airport code.
-            date (str): Flight date in YYYY-MM-DD format.
-
-        Returns:
-            list: A list of dictionaries containing flight information.
-        """
-        url = f"https://www.makemytrip.com/flight/search?itinerary={from_location}-{to_location}-{date}"
-        self.get_page(url)
-
-        results = []
-        try:
-            wait = WebDriverWait(self.driver, 10)
-            wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'listingCard')]")))
-
-            items = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'listingCard')]")
-            for item in items:
-                try:
-                    airline = item.find_element(By.XPATH, ".//p[contains(@class, 'airlineName')]").text
-                    price = item.find_element(By.XPATH, ".//p[contains(@class, 'blackText fontSize18')]").text
-                    departure_time = item.find_element(By.XPATH,
-                                                       ".//p[contains(@class, 'appendBottom2 flightTimeInfo')]").text
-                    results.append({
-                        "airline": airline,
-                        "price": price,
-                        "departure_time": departure_time
-                    })
-                except NoSuchElementException:
-                    continue
-
-                time.sleep(SCRAPER_DELAY)
-
-        except TimeoutException:
-            self.logger.error("Timeout waiting for MakeMyTrip results to load")
-        except Exception as e:
-            self.logger.error(f"Unexpected error during MakeMyTrip scraping: {e}")
-
-        return results
 
     def scrape_weekly_flights(self, from_location, to_location, start_date):
-        # Implementation remains the same as in the previous response, but you can add the new scrapers here
-        # For example:
         results = {}
         date_format = "%Y-%m-%d"
         start_date = datetime.strptime(start_date, date_format)
@@ -161,10 +213,21 @@ class AirfareScraper(BaseScraper):
             date = (start_date + timedelta(days=i)).strftime(date_format)
             self.logger.info(f"Scraping flights for {date}")
             results[date] = {
-                "google_flights": self.scrape_google_flights(from_location, to_location, date),
+                "scrape_ixigo": self.scrape_ixigo(from_location, to_location, date),
                 "skyscanner": self.scrape_skyscanner(from_location, to_location, date),
-                "makemytrip": self.scrape_makemytrip(from_location, to_location, date)
+                "makemytrip": self.scrape_makemytrip(from_location, to_location, date),
+                "cleartrip":self.scrape_cleartrip(from_location, to_location, date)
             }
             time.sleep(WEEKLY_SCRAPER_DELAY)
 
         return results
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    scraper = AirfareScraper()
+    from_location = "DEL"
+    to_location = "BOM"
+    start_date = "2024-07-15"
+
+    weekly_results = scraper.scrape_weekly_flights(from_location, to_location, start_date)
+    print(weekly_results)

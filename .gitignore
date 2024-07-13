@@ -11,7 +11,7 @@ frontend/.yarn
 backend/venv
 
 # Local development settings
-backend/backend/settings/local.py
+backend/backend_f/settings/local.py
 
 # Compiled Python files
 *.pyc

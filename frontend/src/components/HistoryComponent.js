@@ -11,8 +11,8 @@ const HistoryComponent = ({ searchType }) => {
         const fetchItems = async () => {
             try {
                 const payload = { type: searchType };
-                const data = await api.getHistory(payload);
-                setItems(data);
+                const data = await api.gettrack(payload);
+                setItems(data["response"]);
             } catch (error) {
                 console.error('Error fetching history:', error);
             } finally {

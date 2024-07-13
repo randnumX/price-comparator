@@ -17,7 +17,7 @@ const HomeComponent = ({ searchType }) => {
             setIsLoading(true);
             const payload = { name: searchTerm, type: searchType };
             const data = await api.scrape(payload);
-            setSearchResults(data.reverse());
+            setSearchResults(data);
         } catch (error) {
             console.error('Error fetching search results:', error);
         } finally {
@@ -26,15 +26,13 @@ const HomeComponent = ({ searchType }) => {
     }
 
     const handleAddToTrack = (item) => {
-        // Implement the logic to add the item to tracking
         console.log('Added to track:', item);
-        // You might want to call an API to save this item for tracking
     }
 
     const panes = [
         {
             menuItem: 'Search', render: () => (
-                <Tab.Pane style={{ minHeight: '70vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Tab.Pane style={{ minHeight: '70vh', display: 'flex', justifyContent: 'center', alignItems: 'center', paddingBottom: '75px', background: 'whitesmoke' }}>
                     {isLoading ? (
                         <Loader active inline='centered' />
                     ) : searchResults.length === 0 ? (
@@ -46,8 +44,8 @@ const HomeComponent = ({ searchType }) => {
             )
         },
         {
-            menuItem: 'History', render: () => (
-                <Tab.Pane style={{ minHeight: '70vh', paddingBottom: '80px' }}>
+            menuItem: 'Tracked Items', render: () => (
+                <Tab.Pane style={{ minHeight: '70vh', paddingBottom: '80px', background: 'whitesmoke' }}>
                     <HistoryComponent searchType={searchType} />
                 </Tab.Pane>
             )
@@ -58,6 +56,9 @@ const HomeComponent = ({ searchType }) => {
         <div className="ui container">
             <SearchComponent onSearch={handleSearch} searchType={searchType} />
             <Tab panes={panes} activeIndex={activeIndex} onTabChange={(e, { activeIndex }) => setActiveIndex(activeIndex)} />
+            <style jsx>{`
+  
+      `}</style>
         </div>
     );
 }

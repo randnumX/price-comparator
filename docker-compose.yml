@@ -14,13 +14,13 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn backend_f.wsgi:application --bind 0.0.0.0:8000
     ports:
       - "8000:8000"
     networks:
       mynetwork:
         aliases:
-          - backend.mywebsite.com
+          - backend_f.mywebsite.com
 
 networks:
   mynetwork:

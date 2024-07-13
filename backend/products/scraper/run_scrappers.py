@@ -1,33 +1,32 @@
-# backend/run_scrapers.py
-
 import logging
 from shopping_scrapper import ShoppingScraper
 from airfare_scraper import AirfareScraper
-from config import LOG_LEVEL, LOG_FORMAT
+from backend.backend_f.config import LOG_LEVEL, LOG_FORMAT,LOG_FILE
 
 
 def setup_logging():
-    logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
+    logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT, filename=LOG_FILE)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(LOG_LEVEL)
+    console_formatter = logging.Formatter(LOG_FORMAT)
+    console_handler.setFormatter(console_formatter)
+
+    logging.getLogger().addHandler(console_handler)
 
 
 def main():
     setup_logging()
     logger = logging.getLogger(__name__)
 
-    # Run shopping scrapers
     shopping_scraper = ShoppingScraper()
     try:
-        amazon_results = shopping_scraper.scrape_amazon("laptop")
-        flipkart_results = shopping_scraper.scrape_flipkart("laptop")
-        ebay_results = shopping_scraper.scrape_ebay("laptop")
+        flipkart_results = shopping_scraper.scrape_flipkart("Laptop")
 
-        logger.info(f"Amazon results: {len(amazon_results)}")
-        logger.info(f"Flipkart results: {len(flipkart_results)}")
-        logger.info(f"eBay results: {len(ebay_results)}")
+        logger.info(f"Flipkart results: {(flipkart_results)}")
     finally:
         shopping_scraper.close()
 
-    # Run airfare scraper
     airfare_scraper = AirfareScraper()
     try:
         weekly_flights = airfare_scraper.scrape_weekly_flights("SFO", "LAX", "2023-07-15")
